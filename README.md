@@ -44,7 +44,7 @@ cd stock-price-app
 ### 2. 複製專案檔案
 
 ```bash
-git clone https://github.com/lettucebo/20250729-AZ2007.git .
+git clone https://github.com/chttitool/stock.git .
 ```
 
 ### 3. 建立 Python 虛擬環境
