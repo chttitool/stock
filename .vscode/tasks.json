@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "啟動股票價格應用程式",
+			"type": "shell",
+			"command": "E:/Documents/Stocks/stock29env/Scripts/python.exe",
+			"args": [
+				"run.py"
+			],
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

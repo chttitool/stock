@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣股票即時價格顯示系統</title>
+    
+    <!-- Bootstrap 5 CSS from jsDelivr CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- FontAwesome from jsDelivr CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Animate.css for animations -->
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        }
+
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .dark-mode .card {
+            background: rgba(45, 55, 72, 0.9);
+            color: #e2e8f0;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 25px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .stock-card {
+            border-left: 5px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .stock-card.positive {
+            border-left-color: var(--success-color);
+        }
+
+        .stock-card.negative {
+            border-left-color: var(--danger-color);
+        }
+
+        .price-change.positive {
+            color: var(--success-color);
+        }
+
+        .price-change.negative {
+            color: var(--danger-color);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(99, 102, 241, 0.3);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .update-frequency-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .update-frequency-card:hover {
+            transform: scale(1.05);
+        }
+
+        .update-frequency-card.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- 主題切換按鈕 -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="切換主題">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </button>
+
+    <!-- 通知區域 -->
+    <div id="notification-area"></div>
+
+    <!-- 主要內容 -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <!-- 標題卡片 -->
+                <div class="card mb-4 animate__animated animate__fadeInDown">
+                    <div class="card-body text-center">
+                        <h1 class="display-4 fw-bold text-primary mb-3">
+                            <i class="fas fa-chart-line me-3"></i>
+                            台灣股票即時價格顯示系統
+                        </h1>
+                        <p class="lead text-muted">輸入股票代碼，取得最新股價資訊</p>
+                    </div>
+                </div>
+
+                <!-- 股票查詢卡片 -->
+                <div class="card mb-4 animate__animated animate__fadeInUp">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-search me-2"></i>
+                            股票查詢
+                        </h3>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="stockCode" 
+                                           placeholder="請輸入股票代碼（例如：2330）"
+                                           maxlength="4">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-gradient btn-lg w-100" onclick="searchStock()">
+                                    <i class="fas fa-search me-2"></i>
+                                    查詢股價
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 更新頻率設定卡片 -->
+                <div class="card mb-4 animate__animated animate__fadeInUp">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">
+                            <i class="fas fa-clock me-2"></i>
+                            更新頻率設定
+                        </h3>
+                        
+                        <div class="row" id="frequency-options">
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(5)">
+                                    <div class="card-body">
+                                        <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
+                                        <h5>5 秒</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card update-frequency-card text-center active" onclick="setUpdateFrequency(10)">
+                                    <div class="card-body">
+                                        <i class="fas fa-clock fa-2x mb-2"></i>
+                                        <h5>10 秒</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(30)">
+                                    <div class="card-body">
+                                        <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                                        <h5>30 秒</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3 mb-3">
+                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(60)">
+                                    <div class="card-body">
+                                        <i class="fas fa-hourglass fa-2x mb-2"></i>
+                                        <h5>1 分鐘</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 股票資訊顯示卡片 -->
+                <div class="card animate__animated animate__fadeInUp" id="stock-info-card" style="display: none;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                股票資訊
+                            </h3>
+                            <div class="d-flex align-items-center">
+                                <div class="loading-spinner me-3" id="loading-indicator" style="display: none;"></div>
+                                <span class="badge bg-info" id="last-update">最後更新：--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="stock-data">
+                            <!-- 股票資訊將在這裡動態生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JavaScript from jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // 全域變數
+        let updateInterval; // 更新間隔計時器
+        let currentFrequency = 10; // 目前更新頻率（秒）
+        let currentStockCode = ''; // 目前查詢的股票代碼
+
+        /**
+         * 切換深色/淺色主題
+         */
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        /**
+         * 初始化主題設定
+         */
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.className = 'fas fa-sun';
+            }
+        }
+
+        /**
+         * 設定股價更新頻率
+         * @param {number} seconds - 更新頻率（秒）
+         */
+        function setUpdateFrequency(seconds) {
+            currentFrequency = seconds;
+            
+            // 更新 UI 狀態
+            document.querySelectorAll('.update-frequency-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 如果有正在更新的股票，重新設定計時器
+            if (currentStockCode) {
+                clearInterval(updateInterval);
+                startAutoUpdate();
+            }
+            
+            showNotification(`更新頻率已設定為 ${seconds} 秒`, 'info');
+        }
+
+        /**
+         * 搜尋股票
+         */
+        function searchStock() {
+            const stockCode = document.getElementById('stockCode').value.trim();
+            
+            if (!stockCode) {
+                showNotification('請輸入股票代碼', 'warning');
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(stockCode)) {
+                showNotification('股票代碼必須是 4 位數字', 'warning');
+                return;
+            }
+            
+            currentStockCode = stockCode;
+            fetchStockData(stockCode);
+            startAutoUpdate();
+        }
+
+        /**
+         * 取得股票資料
+         * @param {string} stockCode - 股票代碼
+         */
+        async function fetchStockData(stockCode) {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/stock/${stockCode}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayStockData(result.data);
+                    updateLastUpdateTime();
+                    showNotification(`股票 ${stockCode} 資料更新成功`, 'success');
+                } else {
+                    showNotification(`取得股票資料失敗: ${result.error}`, 'danger');
+                }
+            } catch (error) {
+                showNotification(`網路連線錯誤: ${error.message}`, 'danger');
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        /**
+         * 顯示股票資料
+         * @param {Object} data - 股票資料
+         */
+        function displayStockData(data) {
+            const stockInfoCard = document.getElementById('stock-info-card');
+            const stockDataDiv = document.getElementById('stock-data');
+            
+            const changeClass = data.change >= 0 ? 'positive' : 'negative';
+            const changeIcon = data.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+            
+            stockDataDiv.innerHTML = `
+                <div class="col-12">
+                    <div class="card stock-card ${changeClass} mb-3">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h4 class="fw-bold mb-1">${data.name} (${data.code})</h4>
+                                    <h2 class="display-4 fw-bold mb-0">$${data.price.toFixed(2)}</h2>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <div class="price-change ${changeClass} mb-2">
+                                        <i class="fas ${changeIcon} me-1"></i>
+                                        ${data.change >= 0 ? '+' : ''}${data.change.toFixed(2)} 
+                                        (${data.change_percent >= 0 ? '+' : ''}${data.change_percent.toFixed(2)}%)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-bar text-primary fa-2x mb-2"></i>
+                            <h6 class="text-muted">開盤價</h6>
+                            <h5 class="fw-bold">$${data.open.toFixed(2)}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-up text-success fa-2x mb-2"></i>
+                            <h6 class="text-muted">最高價</h6>
+                            <h5 class="fw-bold">$${data.high.toFixed(2)}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-arrow-down text-danger fa-2x mb-2"></i>
+                            <h6 class="text-muted">最低價</h6>
+                            <h5 class="fw-bold">$${data.low.toFixed(2)}</h5>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-area text-info fa-2x mb-2"></i>
+                            <h6 class="text-muted">成交量</h6>
+                            <h5 class="fw-bold">${data.volume.toLocaleString()}</h5>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            stockInfoCard.style.display = 'block';
+        }
+
+        /**
+         * 開始自動更新
+         */
+        function startAutoUpdate() {
+            clearInterval(updateInterval);
+            
+            updateInterval = setInterval(() => {
+                if (currentStockCode) {
+                    fetchStockData(currentStockCode);
+                }
+            }, currentFrequency * 1000);
+        }
+
+        /**
+         * 更新最後更新時間
+         */
+        function updateLastUpdateTime() {
+            const lastUpdateSpan = document.getElementById('last-update');
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-TW');
+            lastUpdateSpan.textContent = `最後更新：${timeString}`;
+        }
+
+        /**
+         * 顯示通知
+         * @param {string} message - 通知訊息
+         * @param {string} type - 通知類型 (success, danger, warning, info)
+         */
+        function showNotification(message, type = 'info') {
+            const notificationArea = document.getElementById('notification-area');
+            
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show notification animate__animated animate__fadeInRight`;
+            notification.innerHTML = `
+                <strong><i class="fas fa-info-circle me-2"></i></strong>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            notificationArea.appendChild(notification);
+            
+            // 3 秒後自動移除通知
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.classList.add('animate__fadeOutRight');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 500);
+                }
+            }, 3000);
+        }
+
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTheme();
+            
+            // 支援 Enter 鍵查詢
+            document.getElementById('stockCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchStock();
+                }
+            });
+        });
+
+        // 頁面關閉時清除計時器
+        window.addEventListener('beforeunload', function() {
+            clearInterval(updateInterval);
+        });
+    </script>
+</body>
+</html>
