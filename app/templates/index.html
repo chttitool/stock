@@ -193,7 +193,7 @@
                         </h3>
                         
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text">
                                         <i class="fas fa-chart-bar"></i>
@@ -205,54 +205,68 @@
                                            maxlength="4">
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 text-end">
                                 <button class="btn btn-gradient btn-lg w-100" onclick="searchStock()">
                                     <i class="fas fa-search me-2"></i>
                                     查詢股價
                                 </button>
                             </div>
+                            <!-- 持續更新 toggle 已移至更新頻率設定卡片 -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 更新頻率設定卡片 -->
+                <!-- 更新頻率設定卡片（可收折） -->
                 <div class="card mb-4 animate__animated animate__fadeInUp">
-                    <div class="card-body">
-                        <h3 class="card-title mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#frequencyCollapse" aria-expanded="true" aria-controls="frequencyCollapse">
+                        <div>
                             <i class="fas fa-clock me-2"></i>
-                            更新頻率設定
-                        </h3>
-                        
-                        <div class="row" id="frequency-options">
-                            <div class="col-6 col-md-3 mb-3">
-                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(5)">
-                                    <div class="card-body">
-                                        <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
-                                        <h5>5 秒</h5>
+                            <span class="card-title">更新頻率設定</span>
+                        </div>
+                        <i class="fas fa-chevron-down" id="frequencyCollapseIcon"></i>
+                    </div>
+                    <div id="frequencyCollapse" class="collapse show">
+                        <div class="card-body">
+                            <div class="row align-items-center mb-3">
+                                <div class="col-12 col-md-4 mb-2 mb-md-0">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="toggleUpdateClosed" checked>
+                                        <label class="form-check-label ms-0" for="toggleUpdateClosed" title="啟用後，休市/收盤時仍會持續自動更新" style="margin-left: 0.25rem;">持續更新</label>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <div class="card update-frequency-card text-center active" onclick="setUpdateFrequency(10)">
-                                    <div class="card-body">
-                                        <i class="fas fa-clock fa-2x mb-2"></i>
-                                        <h5>10 秒</h5>
+                            <div class="row" id="frequency-options">
+                                <div class="col-6 col-md-3 mb-3">
+                                    <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(5)">
+                                        <div class="card-body">
+                                            <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
+                                            <h5>5 秒</h5>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(30)">
-                                    <div class="card-body">
-                                        <i class="fas fa-hourglass-half fa-2x mb-2"></i>
-                                        <h5>30 秒</h5>
+                                <div class="col-6 col-md-3 mb-3">
+                                    <div class="card update-frequency-card text-center active" onclick="setUpdateFrequency(10)">
+                                        <div class="card-body">
+                                            <i class="fas fa-clock fa-2x mb-2"></i>
+                                            <h5>10 秒</h5>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-6 col-md-3 mb-3">
-                                <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(60)">
-                                    <div class="card-body">
-                                        <i class="fas fa-hourglass fa-2x mb-2"></i>
-                                        <h5>1 分鐘</h5>
+                                <div class="col-6 col-md-3 mb-3">
+                                    <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(30)">
+                                        <div class="card-body">
+                                            <i class="fas fa-hourglass-half fa-2x mb-2"></i>
+                                            <h5>30 秒</h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3 mb-3">
+                                    <div class="card update-frequency-card text-center" onclick="setUpdateFrequency(60)">
+                                        <div class="card-body">
+                                            <i class="fas fa-hourglass fa-2x mb-2"></i>
+                                            <h5>1 分鐘</h5>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -283,9 +297,13 @@
         </div>
     </div>
 
+    <!-- 頁面註腳 -->
+    <footer class="text-center py-3 mt-4" style="font-size:0.95rem;color:#888;">
+        <div>版本：1.0.0　|　最後更新：2025-07-29　|　開發者：GitHub Copilot</div>
+        <div>本專案僅供學習與教育用途，不得用於商業用途。股票資料來源於 twstock 套件，請遵循相關使用條款。</div>
+    </footer>
     <!-- Bootstrap 5 JavaScript from jsDelivr CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <!-- 引用外部 main.js -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
