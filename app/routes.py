@@ -36,19 +36,10 @@ def get_stock_price(stock_code: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: 包含股價資訊的 JSON 回應
     """
-    try:
-        # 使用股票服務取得股價資訊
-        stock_data = stock_service.get_real_time_price(stock_code)
-        
-        # 回傳成功的 JSON 回應
-        return jsonify({
-            'success': True,
-            'data': stock_data
-        })
-    
-    except Exception as error:
-        # 發生錯誤時回傳錯誤訊息
-        return jsonify({
-            'success': False,
-            'error': str(error)
-        }), 400
+    # 使用股票服務取得股價資訊
+    stock_data = stock_service.get_real_time_price(stock_code)
+    # 回傳成功的 JSON 回應
+    return jsonify({
+        'success': True,
+        'data': stock_data
+    })
