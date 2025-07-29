@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 
 
+
 class StockService:
     """
     股票服務類別
