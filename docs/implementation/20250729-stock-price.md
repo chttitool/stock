@@ -16,6 +16,13 @@
 - **測試框架：** pytest
 - **開發環境：** Windows 11 / 虛擬環境 stock29env
 
+### 前端 JavaScript 分檔重構
+- theme.js：主題切換與初始化
+- notification.js：通知訊息顯示與自動消失
+- stock.js：股票查詢、資料更新、自動更新邏輯
+- collapse.js：更新頻率設定卡片收折/展開
+- main.js：初始化所有事件監聽器，負責呼叫各模組功能
+
 ## 實作步驟
 
 ### 步驟 1：專案初始化與環境設定
