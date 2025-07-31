@@ -36,6 +36,10 @@ function setUpdateFrequency(seconds) {
         card.classList.remove('active');
     });
     event.currentTarget.classList.add('active');
+    
+    // 更新頻率顯示
+    document.getElementById('current-frequency').textContent = seconds;
+    
     if (currentStockCode) {
         clearInterval(updateInterval);
         startAutoUpdate();
@@ -71,21 +75,30 @@ function searchStock() {
  */
 async function fetchStockData(stockCode) {
     const loadingIndicator = document.getElementById('loading-indicator');
+    const currentTimeDiv = document.getElementById('current-time');
+    
     loadingIndicator.style.display = 'block';
+    currentTimeDiv.textContent = '載入中...';
+    currentTimeDiv.style.display = 'inline-block';
+    
     try {
         const response = await fetch(`/api/stock/${stockCode}`);
         const result = await response.json();
         loadingIndicator.style.display = 'none';
+        
         if (result.success) {
             updateStockUI(result.data);
             updateLastUpdateTime();
             window.showNotification('股價查詢成功', 'success');
+            currentTimeDiv.textContent = '更新成功';
         } else {
             handleApiError(result.error);
+            currentTimeDiv.textContent = '查詢失敗';
         }
     } catch (error) {
         loadingIndicator.style.display = 'none';
         handleApiError(error.message);
+        currentTimeDiv.textContent = '查詢錯誤';
     }
 }
 
